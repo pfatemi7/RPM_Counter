@@ -1,0 +1,61 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // 16x2 LCD on I2C addr 0x27
+const int hallPin = 2;
+
+volatile int rotCount = 0;
+volatile unsigned long lastTime = 0;
+unsigned long totalCount = 0;
+unsigned long startTime = 0;
+
+const int sampleSize = 2;
+
+void setup() {
+  pinMode(hallPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(hallPin), onRotation, RISING);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0, 0);
+  lcd.print("RPM:");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Count: 0");
+
+  lastTime = millis();
+  startTime = lastTime;
+}
+
+void loop() {
+  unsigned long now = millis();
+  unsigned long elapsedSecs = (now - startTime) / 1000;
+
+  if (rotCount >= sampleSize) {
+    unsigned long dt = now - lastTime;
+    float rpm = (rotCount / (dt / 1000.0)) * 60.0;
+
+    lcd.setCursor(5, 0);
+    lcd.print(rpm, 1);
+    lcd.print("   "); // clear leftovers
+
+    lastTime = now;
+    rotCount = 0;
+  }
+
+  // update total rotation count
+  lcd.setCursor(7, 1);
+  lcd.print(totalCount);
+  lcd.print("   ");
+
+  // update time
+  lcd.setCursor(12, 0);
+  lcd.print(elapsedSecs);
+  lcd.print("   ");
+}
+
+void onRotation() {
+  rotCount++;
+  totalCount++;
+}
