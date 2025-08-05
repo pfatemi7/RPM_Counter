@@ -1,5 +1,5 @@
 # RPM_Counter
-A simple RPM counter 
+RPM counter using Hall effect sensor
 
 #  Simple RPM Counter with Hall Sensor & LCD (Arduino)
 
